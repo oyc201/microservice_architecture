@@ -1,0 +1,143 @@
+openapi: 3.0.3
+info:
+  title: LoL Match Insights - Batch Telemetry API
+  version: "1.0.0"
+paths:
+  /lol/player-snapshots:
+    post:
+      summary: Receives a batch of player performance snapshots
+      operationId: app.receive_player_snapshots #corresponds to the module name and function name 
+      description: Adds a batch of player snapshots for a match.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayerSnapshotBatch'
+      responses:
+        '201':
+          description: Batch successfully received
+        '400':
+          description: Invalid input
+  /lol/match-events:
+    post:
+      summary: Receives a batch of match timeline events (objectives, kills, towers)
+      operationId: app.receive_match_events
+      description: Adds a batch of match events for a match.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchEventBatch'
+      responses:
+        '201':
+          description: Batch successfully received
+        '400':
+          description: Invalid input
+
+components:
+  schemas:
+    PlayerSnapshotBatch:
+      type: object
+      required: [source_id, sent_timestamp, match_id, snapshots]
+      properties:
+        source_id:
+          type: string
+          description: Identifier for the sender (device/app/user)
+          example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+        sent_timestamp:
+          type: string
+          format: date-time
+          example: "2026-01-14T18:12:33Z"
+        match_id:
+          type: string
+          example: "NA1_1234567890"
+        region:
+          type: string
+          example: "NA"
+        snapshots:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerSnapshot'
+
+    PlayerSnapshot:
+      type: object
+      required: [player_puuid, game_time_seconds, kills, deaths, assists, cs, gold, lane]
+      properties:
+        trace_id:
+          type: string
+          example: "1345ab-67889dc-21345ef-0987654"
+        player_puuid:
+          type: string
+          example: "abcdefg-puuid-123"
+        game_time_seconds:
+          type: integer
+          example: 615
+        kills:
+          type: integer
+          example: 3
+        deaths:
+          type: integer
+          example: 1
+        assists:
+          type: integer
+          example: 4
+        cs:
+          type: integer
+          example: 72
+        gold:
+          type: integer
+          example: 4200
+        lane:
+          type: string
+          enum: [TOP, JUNGLE, MID, BOT, SUPPORT]
+
+    MatchEventBatch:
+      type: object
+      required: [source_id, sent_timestamp, match_id, events]
+      properties:
+        source_id:
+          type: string
+          example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+        sent_timestamp:
+          type: string
+          format: date-time
+          example: "2026-01-14T18:12:33Z"
+        match_id:
+          type: string
+          example: "NA1_1234567890"
+        game_patch:
+          type: string
+          example: "15.1"
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchEvent'
+
+    MatchEvent:
+      type: object
+      required: [event_type, game_time_seconds, team_id, x, y]
+      properties:
+        trace_id:
+          type: string
+          example: "1345ab-67889dc-21345ef-0987654gh"
+        event_type:
+          type: string
+          enum: [DRAGON, BARON, HERALD, TOWER, KILL, INHIBITOR]
+        game_time_seconds:
+          type: integer
+          example: 1320
+        team_id:
+          type: integer
+          enum: [100, 200]
+        x:
+          type: number
+          example: 102.5
+        y:
+          type: number
+          example: 88.2
+        killer_puuid:
+          type: string
+          nullable: true
+          example: "abcdefg-puuid-123"

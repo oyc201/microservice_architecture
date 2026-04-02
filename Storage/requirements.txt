@@ -1,0 +1,7 @@
+connexion[flask]==3.3.0
+connexion[uvicorn]==3.3.0
+connexion[swagger-ui]==3.3.0
+sqlalchemy==2.0.46
+pymysql==1.1.2
+pykafka==2.8.0
+cryptography==46.0.5
