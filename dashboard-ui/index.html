@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+ 
 <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="style.css">
@@ -10,7 +10,7 @@
     <script src="updateStats.js"></script>
     <title>ACIT3855 - LoL Match Insights</title>
 </head>
-
+ 
 <body>
     <main id="main">
         <div id="header">
@@ -20,27 +20,27 @@
         <div id="messages"></div>
         <h2>Statistics</h2>
         <div id="statistics">
-            <div id="processing">
-                <code id="processing-stats">Placeholder value - processing stats should appear here</code>
+            <div class="stat-box">
+                <h3>Processing Stats</h3>
+                <div id="processing-stats"></div>
             </div>
-            <div id="analyzer">
-                <code id="analyzer-stats">Placeholder value - analyzer stats should appear here</code>
+            <div class="stat-box">
+                <h3>Analyzer Stats</h3>
+                <div id="analyzer-stats"></div>
             </div>
         </div>
-        <h2>Analyzer events</h2>
-        <div id="analyzer">
-            <div>
+        <h2>Analyzer Events</h2>
+        <div id="events">
+            <div class="event-box">
                 <h3>Player Snapshot</h3>
-                <code id="event-snow">
-                </code>
+                <div id="event-player-snapshot"></div>
             </div>
-            <div>
+            <div class="event-box">
                 <h3>Match Event</h3>
-                <code id="event-lift">
-                </code>
+                <div id="event-match-event"></div>
             </div>
         </div>
     </main>
 </body>
-
+ 
 </html>

@@ -1,4 +1,14 @@
 services:
+  dashboard:
+    build:
+      context: ./dashboard-ui
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - processor
+      - analyzer
+
   receiver:
     build:
       context: ./Receiver
