@@ -1,0 +1,5 @@
+connexion[flask]==3.3.0
+connexion[uvicorn]==3.3.0
+connexion[swagger-ui]==3.3.0
+httpx==0.28.1
+apscheduler==3.11.2

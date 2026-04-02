@@ -1,0 +1,12 @@
+version: 1
+events:
+  hostname: kafka
+  port: 29092
+  topic: events
+
+# events:
+#   Player:
+#     url: http://127.0.0.1:8090/lol/player-snapshots
+#   Match:
+#     url: http://127.0.0.1:8090/lol/match-events
+

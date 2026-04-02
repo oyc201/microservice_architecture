@@ -1,0 +1,10 @@
+version: 1
+datastore:
+  filename: /data/data.json
+scheduler:
+  interval: 2
+events:
+  player:
+    url: http://storage:8090/lol/player-snapshots
+  match:
+    url: http://storage:8090/lol/match-events

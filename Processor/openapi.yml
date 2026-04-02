@@ -1,0 +1,55 @@
+openapi: 3.0.0
+info:
+  title: LoL Processing Stats API
+  version: "1.0.0"
+paths:
+  /stats:
+    get:
+      summary: Gets event stats
+      operationId: app.get_stats
+      responses:
+        '200':
+          description: Stats returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+        '404':
+          description: Stats do not exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+components:
+  schemas:
+    Stats:
+      required:
+        - num_player_snapshots
+        - num_match_events
+        # - avg_gold
+        # - avg_game_time_seconds
+        - last_updated
+      properties:
+        num_player_snapshots:
+          type: integer
+          example: 99
+        num_match_events:
+          type: integer
+          example: 9
+        # avg_gold: 
+        #   type: integer
+        #   example: 99999
+        #   nullable: true
+        # avg_game_time_seconds: 
+        #   type: integer 
+        #   example: 9999
+        #   nullable: true
+        last_updated: 
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+      type: object

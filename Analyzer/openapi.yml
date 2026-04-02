@@ -1,0 +1,152 @@
+openapi: 3.0.3
+info:
+  title: LoL Analyzer API
+  version: "1.0.0"
+paths:
+  /player-snapshot:
+    get:
+      summary: Gets the player snapshot reading at the index in the event store
+      operationId: app.get_player_snapshot
+      parameters:
+        - name: index
+          in: query
+          schema:
+            type: integer
+            example: 100
+      responses:
+        '200':
+          description: Player snapshot found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerSnapshot'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message: 
+                    type: string
+        '404':
+          description: Not found
+  /match-event:
+    get:
+      summary: Gets the match event reading at the index in the event store
+      operationId: app.get_match_event
+      parameters:
+        - name: index
+          in: query
+          schema:
+            type: integer
+            example: 100
+      responses:
+        '200':
+          description: Match event found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchEvent'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message: 
+                    type: string
+        '404':
+          description: Not found
+  /stats:
+    get:
+      summary: Gets the reading stats
+      operationId: app.get_stats
+      responses:
+        '200':
+          description: Stats returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+
+components:
+  schemas:
+    PlayerSnapshot:
+      type: object
+      required: [trace_id, match_id, player_puuid, game_time_seconds, kills, deaths, assists, cs, gold, lane]
+      properties:
+        trace_id:
+          type: string
+          example: "1345ab-67889dc-21345ef-0987654"
+        match_id:
+          type: string
+          example: "NA1_1234567890"
+        player_puuid:
+          type: string
+          example: "abcdefg-puuid-123"
+        game_time_seconds:
+          type: integer
+          example: 615
+        kills:
+          type: integer
+          example: 3
+        deaths:
+          type: integer
+          example: 1
+        assists:
+          type: integer
+          example: 4
+        cs:
+          type: integer
+          example: 72
+        gold:
+          type: integer
+          example: 4200
+        lane:
+          type: string
+          enum: [TOP, JUNGLE, MID, BOT, SUPPORT]
+
+    MatchEvent:
+      type: object
+      required: [trace_id, match_id, event_type, game_time_seconds, team_id, x, y]
+      properties:
+        trace_id:
+          type: string
+          example: "1345ab-67889dc-21345ef-0987654gh"
+        match_id:
+          type: string
+          example: "NA1_1234567890"
+        event_type:
+          type: string
+          enum: [DRAGON, BARON, HERALD, TOWER, KILL, INHIBITOR]
+        game_time_seconds:
+          type: integer
+          example: 1320
+        team_id:
+          type: integer
+          enum: [100, 200]
+        x:
+          type: number
+          example: 102.5
+        y:
+          type: number
+          example: 88.2
+        killer_puuid:
+          type: string
+          nullable: true
+          example: "abcdefg-puuid-123"
+
+    Stats:
+      type: object
+      required:
+        - num_player_snapshots
+        - num_match_events
+      properties:
+        num_player_snapshots:
+          type: integer
+          example: 99
+        num_match_events:
+          type: integer
+          example: 99
