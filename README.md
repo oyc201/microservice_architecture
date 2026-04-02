@@ -1,1 +1,19 @@
 # microservice_architecture
+
+Description:
+LoL Match Insights is a service that receives batched match telemetry from companion apps / game overlays 
+and stores it for post-game analytics like lane performance, objective timing, and build efficiency.
+
+Batch Event Type 1: Player Performance Snapshots
+    A companion app sends periodic snapshots of each player’s stats during a match (e.g., every 10–30 seconds).
+
+Batch Event Type 2: Objective + Event Timeline
+    The app sends a batch of notable events (dragons, barons, towers, first blood, etc.) gathered over a time window.
+
+Peak load estimate:
+    Peak times: 6pm–11pm PST
+    Assume 2,000 concurrent active matches feeding the service
+
+User 1 — Player
+    - Uses post-game analytics to review laning, farm efficiency, and objective participation.
+    - Wants clear summaries like “CS at 10/15”, “first dragon timing”, “gold leads.”
