@@ -1,6 +1,9 @@
 import httpx, connexion, json, uuid, yaml, logging, logging.config, datetime, os
 from connexion import NoContent
 from pykafka import KafkaClient
+import time
+import random
+from pykafka.exceptions import KafkaException
 
 with open('/config/receiver_conf.yml', 'r') as f:
     app_config = yaml.safe_load(f.read())
@@ -18,9 +21,55 @@ hostname = app_config["events"]["hostname"]
 port = app_config["events"]["port"]
 topic_name = app_config["events"]["topic"]
 
-client = KafkaClient(hosts=f"{hostname}:{port}")
-topic = client.topics[topic_name.encode('utf-8')]
-producer = topic.get_sync_producer()
+
+class KafkaProducerWrapper:
+    def __init__(self, hostname, port, topic_name):
+        self.hostname = hostname
+        self.port = port
+        self.topic_name = topic_name.encode("utf-8")
+        self.client = None
+        self.topic = None
+        self.producer = None
+        self.connect()
+
+    def connect(self):
+        while True:
+            try:
+                print("Trying to connect to Kafka...")
+                self.client = KafkaClient(hosts=f"{self.hostname}:{self.port}")
+                self.topic = self.client.topics[self.topic_name]
+                self.producer = self.topic.get_sync_producer()
+                print("Connected to Kafka")
+                break
+            except KafkaException as e:
+                print(f"Kafka connection failed: {e}")
+                self.client = None
+                self.topic = None
+                self.producer = None
+                time.sleep(random.randint(500, 1500) / 1000)
+
+    def produce_message(self, message):
+        while True:
+            try:
+                if self.producer is None:
+                    self.connect()
+
+                self.producer.produce(message.encode("utf-8"))
+                break
+
+            except KafkaException as e:
+                print(f"Kafka produce failed: {e}")
+                self.client = None
+                self.topic = None
+                self.producer = None
+                time.sleep(random.randint(500, 1500) / 1000)
+                self.connect()
+
+# client = KafkaClient(hosts=f"{hostname}:{port}")
+# topic = client.topics[topic_name.encode('utf-8')]
+# producer = topic.get_sync_producer()
+
+kafka_wrapper = KafkaProducerWrapper(hostname, port, topic_name)
 
 def receive_player_snapshots(body):
     match_id = body["match_id"]          # from receiver batch
@@ -50,7 +99,8 @@ def receive_player_snapshots(body):
         "payload": payload
         }
         msg_str = json.dumps(msg)
-        producer.produce(msg_str.encode('utf-8'))
+        # producer.produce(msg_str.encode('utf-8'))
+        kafka_wrapper.produce_message(msg_str)
         
 
         # logger.info(f"Response for event player_snapshot (id: {trace_id}) has status {r.status_code}")
@@ -86,7 +136,8 @@ def receive_match_events(body):
         "payload": payload
         }
         msg_str = json.dumps(msg)
-        producer.produce(msg_str.encode('utf-8'))
+        # producer.produce(msg_str.encode('utf-8'))
+        kafka_wrapper.produce_message(msg_str)
     
         # logger.info(f"Response for event match_event (id: {trace_id}) has status {r.status_code}")
         logger.info(f"Produced match_event event with trace id {trace_id}")

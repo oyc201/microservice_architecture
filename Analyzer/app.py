@@ -1,7 +1,9 @@
-import connexion , json, yaml, logging, logging.config, os
+import connexion , json, yaml, logging, logging.config, os, time, random
 from pykafka import KafkaClient
 from connexion.middleware import MiddlewarePosition
 from starlette.middleware.cors import CORSMiddleware
+from pykafka.common import OffsetType
+from pykafka.exceptions import KafkaException
 
 # Load configs
 with open("/config/analyzer_conf.yml", "r") as f:
@@ -14,104 +16,61 @@ with open("/config/analyzer_log_conf.yml", "r") as f:
 logging.config.dictConfig(LOG_CONFIG)
 logger = logging.getLogger("basicLogger")
 
+hostname = app_config["events"]["hostname"]
+port = app_config["events"]["port"]
+topic_name = app_config["events"]["topic"]
+
+def get_consumer():
+    client = KafkaClient(hosts=f"{hostname}:{port}")
+    topic = client.topics[topic_name.encode("utf-8")]
+    logger.info(f"Available topics: {list(client.topics.keys())}")
+    logger.info(f"Looking for topic: {topic_name.encode('utf-8')}")
+    return topic.get_simple_consumer(
+        reset_offset_on_start=True,
+        auto_offset_reset=OffsetType.EARLIEST,
+        consumer_timeout_ms=1000
+    )
+
 # get player snapshot by index
 def get_player_snapshot(index):
     logger.info(f"Received request for player snapshot at index {index}")
-
-    hostname = app_config["events"]["hostname"]
-    port = app_config["events"]["port"]
-    topic_name = app_config["events"]["topic"]
-
-    client = KafkaClient(hosts=f"{hostname}:{port}")
-    topic = client.topics[str.encode(f"{topic_name}")]
-    consumer = topic.get_simple_consumer(reset_offset_on_start=True, consumer_timeout_ms=1000)
-
     counter = 0
-
-    for msg in consumer:
-
-        msg_str = msg.value.decode("utf-8")
-        msg = json.loads(msg_str)
-        payload = msg["payload"]
-
-        if msg["type"] == "player_snapshot":
-
+    for raw_msg in get_consumer():
+        event = json.loads(raw_msg.value.decode("utf-8"))
+        if event["type"] == "player_snapshot":
             if counter == index:
                 logger.info(f"Found player snapshot at index {index}")
-                return payload, 200
-
+                return event["payload"], 200
             counter += 1
-
     logger.error(f"Player snapshot index {index} not found")
-
     return {"message": f"No player snapshot at index {index}"}, 404
 
-
-# get match event by index
+#get match event by index
 def get_match_event(index):
     logger.info(f"Received request for match event at index {index}")
-
-    hostname = app_config["events"]["hostname"]
-    port = app_config["events"]["port"]
-    topic_name = app_config["events"]["topic"]
-
-    client = KafkaClient(hosts=f"{hostname}:{port}")
-    topic = client.topics[str.encode(f"{topic_name}")]
-    consumer = topic.get_simple_consumer(reset_offset_on_start=True, consumer_timeout_ms=1000)
-
     counter = 0
-
-    for msg in consumer:
-
-        msg_str = msg.value.decode("utf-8")
-        msg = json.loads(msg_str)
-        payload = msg["payload"]
-
-        if msg["type"] == "match_event":
-
+    for raw_msg in get_consumer():
+        event = json.loads(raw_msg.value.decode("utf-8"))
+        if event["type"] == "match_event":
             if counter == index:
                 logger.info(f"Found match event at index {index}")
-                return payload, 200
-
+                return event["payload"], 200
             counter += 1
-
     logger.error(f"Match event index {index} not found")
-
     return {"message": f"No match event at index {index}"}, 404
-
 
 def get_stats():
     logger.info("Received request for stats")
-
-    hostname = app_config["events"]["hostname"]
-    port = app_config["events"]["port"]
-    topic_name = app_config["events"]["topic"]
-
-    client = KafkaClient(hosts=f"{hostname}:{port}")
-    topic = client.topics[str.encode(f"{topic_name}")]
-    consumer = topic.get_simple_consumer(reset_offset_on_start=True, consumer_timeout_ms=1000)
-
     num_player_snapshots = 0
     num_match_events = 0
-
-    for msg in consumer:
-        msg_str = msg.value.decode("utf-8")
-        msg = json.loads(msg_str)
-
-        if msg["type"] == "player_snapshot":
+    for raw_msg in get_consumer():
+        event = json.loads(raw_msg.value.decode("utf-8"))
+        if event["type"] == "player_snapshot":
             num_player_snapshots += 1
-
-        if msg["type"] == "match_event":
+        if event["type"] == "match_event":
             num_match_events += 1
-
     logger.info(f"Stats calculated: players snapshots={num_player_snapshots}, match events={num_match_events}")
-
-    stats = {
-        "num_player_snapshots": num_player_snapshots,
-        "num_match_events": num_match_events,
-    }
-
-    return stats, 200
+    return {"num_player_snapshots": num_player_snapshots, "num_match_events": num_match_events}, 200
 
 app = connexion.FlaskApp(__name__, specification_dir=".")
 app.add_api("openapi.yml", strict_validation=True, validate_responses=True)

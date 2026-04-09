@@ -31,8 +31,8 @@ def populate_stats():
         stats = {
             "num_player_snapshots": 0, 
             "num_match_events": 0,          
-            # "avg_gold": None,                 
-            # "avg_game_time_seconds": None,
+            "avg_gold": 0,                 
+            "avg_game_time_seconds": 0,
             "last_updated": "2025-01-01T00:00:00Z"
         }
 
@@ -65,17 +65,21 @@ def populate_stats():
     stats["num_player_snapshots"] += len(player_events)
     stats["num_match_events"] += len(match_events)
 
-    #Update gold
-    # if player_events:
-    #     gold_values = [e["gold"] for e in player_events]
-    #     stats["avg_gold"] = sum(gold_values) / len(gold_values)
 
-    #Update time
-    # if match_events:
-    #     times = [e["game_time_seconds"] for e in match_events]
-    #     stats["avg_game_time_seconds"] = sum(times) / len(times)
+    # Update gold
+    if player_events:
+        prev_avg = stats["avg_gold"] or 0
+        prev_count = stats["num_player_snapshots"] - len(player_events)
+        batch_sum = sum(e["gold"] for e in player_events)
+        stats["avg_gold"] = (prev_avg * prev_count + batch_sum) / stats["num_player_snapshots"]
 
-    stats["last_updated"] = current_timestamp
+    # Update game time 
+    if match_events:
+        prev_avg = stats["avg_game_time_seconds"] or 0
+        prev_count = stats["num_match_events"] - len(match_events)
+        batch_sum = sum(e["game_time_seconds"] for e in match_events)
+        stats["avg_game_time_seconds"] = (prev_avg * prev_count + batch_sum) / stats["num_match_events"]
+        stats["last_updated"] = current_timestamp
 
     #Write to JSON
     with open(DATA_FILE, "w") as f:
