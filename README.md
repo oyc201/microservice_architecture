@@ -2,13 +2,7 @@
 
 ## Overview
 
-This project is a distributed event-driven system built using microservices. It processes game-related events (player snapshots and match events) using Kafka, stores them in a database, and provides analytics through an API.
-
-The system is designed to be:
-
-* Scalable
-* Fault-tolerant
-* Resilient to service failures
+This project implements a distributed event-driven microservices architecture using Python, Docker, and Apache Kafka to process and analyze real-time game events. The system consists of multiple services (receiver, storage, analyzer, processor, and dashboard) that communicate asynchronously through Kafka, with MySQL providing persistent data storage. It is designed for scalability and fault tolerance, incorporating service startup coordination, Kafka retry logic, and database connection pooling. Centralized configuration files are used to manage service settings consistently, and Docker volumes ensure data persistence across container restarts.
 
 ---
 
@@ -17,25 +11,25 @@ The system is designed to be:
 The platform consists of the following services:
 
 * **Receiver**
-  Accepts incoming HTTP requests and publishes events to Kafka.
+  Accepts HTTP requests and publishes events to Kafka.
 
 * **Storage**
-  Consumes Kafka events and stores them in a MySQL database.
+  Consumes Kafka events and persists them in MySQL.
 
 * **Analyzer**
-  Reads events from Kafka and provides query endpoints.
+  Reads event data and exposes query endpoints.
 
 * **Processor**
-  Performs periodic processing tasks on stored data.
+  Performs background processing and aggregation tasks.
 
 * **Dashboard**
-  Frontend UI for visualizing and interacting with system data through API endpoints.
+  Frontend UI for visualizing and interacting with system data.
 
 * **Kafka + Zookeeper**
-  Message broker for event streaming.
+  Handles event streaming and message brokering.
 
 * **MySQL Database**
-  Persistent storage for events.
+  Provides persistent storage for processed events.
 
 ---
 
@@ -59,11 +53,19 @@ git clone <your-repo-url>
 cd <your-project>
 ```
 
-### 2. Build and run services
+### 2. Run the system
 
 ```bash
 docker compose up --build
 ```
+
+### 3. Access services
+
+* Receiver: http://localhost:8080/ui
+* Storage: http://localhost:8090/ui
+* Processor: http://localhost:8100/ui
+* Analyzer: http://localhost:8110/ui
+* Dashboard: http://localhost
 
 ---
 
@@ -71,18 +73,10 @@ docker compose up --build
 
 1. Client sends events to the **Receiver**
 2. Receiver publishes events to **Kafka**
-3. **Storage** consumes events and writes to database
-4. **Analyzer** reads events for querying
-5. **Processor** performs background processing tasks
-6. **Dashboard** provides a user interface to visualize and interact with the system
-
----
-
-### Dashboard
-
-The dashboard can be accessed in a browser at:
-
-http://localhost
+3. **Storage** consumes events and stores them in MySQL
+4. **Analyzer** provides query endpoints for event data
+5. **Processor** performs background computations
+6. **Dashboard** visualizes and interacts with system data
 
 ---
 
@@ -90,17 +84,17 @@ http://localhost
 
 ### Reliable Startup
 
-* Implemented service dependency handling using wait scripts
-* Ensures services only start when dependencies are ready
+* Services wait for dependencies using startup scripts
+* Prevents race conditions during container initialization
 
-### Kafka Retry Logic
+### Fault Tolerance
 
-* Producer and consumer wrappers handle reconnection automatically
-* System continues working even if Kafka restarts
+* Kafka producer and consumer retry logic
+* Automatic recovery from broker failures
 
-### Database Resilience
+### Database Reliability
 
-* SQLAlchemy connection pooling configured:
+* SQLAlchemy connection pooling:
 
   * `pool_pre_ping`
   * `pool_recycle`
@@ -108,11 +102,22 @@ http://localhost
 
 ### Data Consistency
 
-* Ensures all events sent are:
+* Ensures all events are:
 
-  * Stored in database
-  * Processed correctly
-  * Available in analyzer
+  * Received
+  * Stored
+  * Processed
+  * Queryable
+
+### Centralized Configuration
+
+* Configuration managed through `/config` directory
+* Consistent service configuration across all components
+
+### Persistent Storage
+
+* Docker volumes used for MySQL and Kafka
+* Prevents data loss across container restarts
 
 ---
 
@@ -138,7 +143,7 @@ http://localhost
 
 ## Testing
 
-You can use tools like:
+You can test the system using:
 
 * Postman
 * curl
@@ -154,38 +159,32 @@ curl -X POST http://localhost:8080/player_snapshots \
 
 ---
 
-## Project Structure
-
-```bash
+Project Structure
 .
-├── Receiver/
-├── Storage/
-├── Analyzer/
-├── Processor/
-├── dashboard-ui/
-├── config/
+├── Analyzer/        # Kafka consumer for querying event data
+├── Receiver/        # API service that receives and publishes events to Kafka
+├── Storage/         # Consumes events and stores them in MySQL
+├── Processor/       # Background processing and aggregation service
+├── dashboard-ui/    # Frontend dashboard for visualization
+├── config/          # Centralized configuration files
+├── data/            
+├── logs/            # Service logs
 ├── docker-compose.yml
-```
-
----
-
-## Notes
-
-* Config files are located in `/config`
-* Services communicate via Docker network
+├── README.md
 
 ---
 
 ## Future Improvements
 
-* Add authentication
-* Improve dashboard UI
-* Add monitoring/log aggregation
-* Optimize Kafka partitioning
-* Implement sensitive configuration with .env file
+* Authentication and authorization
+* Improved dashboard UI/UX
+* Monitoring and logging (e.g., Prometheus, Grafana)
+* Kafka partition scaling and optimization
+* Load balancing across services
 
 ---
 
 ## Author
 
-* Josepoh Oh
+* Joseph Oh
+
