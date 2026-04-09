@@ -160,6 +160,8 @@ curl -X POST http://localhost:8080/player_snapshots \
 ---
 
 Project Structure
+
+```bash
 .
 ├── Analyzer/        # Kafka consumer for querying event data
 ├── Receiver/        # API service that receives and publishes events to Kafka
@@ -171,6 +173,7 @@ Project Structure
 ├── logs/            # Service logs
 ├── docker-compose.yml
 ├── README.md
+```
 
 ---
 
