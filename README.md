@@ -29,7 +29,7 @@ The platform consists of the following services:
   Performs periodic processing tasks on stored data.
 
 * **Dashboard**
-  Frontend UI for interacting with the system.
+  Frontend UI for visualizing and interacting with system data through API endpoints.
 
 * **Kafka + Zookeeper**
   Message broker for event streaming.
@@ -74,6 +74,15 @@ docker compose up --build
 3. **Storage** consumes events and writes to database
 4. **Analyzer** reads events for querying
 5. **Processor** performs background processing tasks
+6. **Dashboard** provides a user interface to visualize and interact with the system
+
+---
+
+### Dashboard
+
+The dashboard can be accessed in a browser at:
+
+http://localhost
 
 ---
 
