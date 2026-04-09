@@ -12,7 +12,11 @@ PORT = app_config["datastore"]["port"]
 DB = app_config["datastore"]["db"]
 URL = f"mysql+pymysql://{USER}:{PASS}@{HOST}:{PORT}/{DB}"
 
-ENGINE = create_engine(URL)
+ENGINE = create_engine(
+    URL,    
+    pool_pre_ping=True,
+    pool_recycle=1800,
+    pool_size=5)
 session = sessionmaker(bind=ENGINE)
 
 def makeSession():

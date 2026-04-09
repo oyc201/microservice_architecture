@@ -30,8 +30,8 @@ components:
       required:
         - num_player_snapshots
         - num_match_events
-        # - avg_gold
-        # - avg_game_time_seconds
+        - avg_gold
+        - avg_game_time_seconds
         - last_updated
       properties:
         num_player_snapshots:
@@ -40,14 +40,14 @@ components:
         num_match_events:
           type: integer
           example: 9
-        # avg_gold: 
-        #   type: integer
-        #   example: 99999
-        #   nullable: true
-        # avg_game_time_seconds: 
-        #   type: integer 
-        #   example: 9999
-        #   nullable: true
+        avg_gold: 
+          type: number
+          example: 99999.0
+          nullable: true
+        avg_game_time_seconds: 
+          type: number 
+          example: 9999.0
+          nullable: true
         last_updated: 
           type: string
           format: date-time
